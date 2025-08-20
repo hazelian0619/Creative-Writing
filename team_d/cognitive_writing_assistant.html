@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创意写作AI助手 - 师范生协作平台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a237e 0%, #283593 25%, #3f51b5 50%, #5c6bc0 100%);
+            min-height: 100vh;
+            color: #e8eaf6;
+            line-height: 1.5;
+            letter-spacing: 0.02em;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 宇宙星尘背景效果 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 20%, rgba(255, 152, 0, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 107, 102, 0.05) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 60%, rgba(255, 152, 0, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* 顶部导航栏 */
+        .header {
+            background: rgba(26, 35, 126, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(92, 107, 192, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(26, 35, 126, 0.3);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #e8eaf6;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-shadow: 0 0 10px rgba(255, 152, 0, 0.3);
+        }
+
+        .logo::before {
+            content: "🎭";
+            font-size: 28px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: #c5cae9;
+        }
+
+        .user-info .status {
+            padding: 4px 12px;
+            background: rgba(255, 152, 0, 0.15);
+            border: 1px solid #FF9800;
+            border-radius: 16px;
+            font-size: 14px;
+            color: #FF9800;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.2);
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 24px;
+            max-width: 1400px;
+            margin: 24px auto;
+            padding: 0 24px;
+            height: calc(100vh - 120px);
+        }
+
+        /* 左侧认知雷达区域 - 宇宙窗风格 */
+        .cognitive-panel {
+            background: rgba(40, 53, 147, 0.3);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(92, 107, 192, 0.4);
+            box-shadow: 0 12px 40px rgba(26, 35, 126, 0.4),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cognitive-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 152, 0, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 107, 102, 0.06) 0%, transparent 50%);
+            animation: cosmicShimmer 12s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes cosmicShimmer {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #e8eaf6;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .cognitive-radar {
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .radar-item {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transform-origin: center;
+            transition: all 0.4s ease-in-out;
+        }
+
+        .radar-item.active {
+            box-shadow: 0 0 20px rgba(255, 152, 0, 0.6);
+            transform: scale(1.2);
+        }
+
+        /* Team A 接口区域 - DIFCM状态显示 */
+        .team-a-interface {
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(207, 216, 220, 0.3);
+            border-radius: 8px;
+            border-left: 3px solid #FF9800;
+        }
+
+        .interface-label {
+            font-size: 12px;
+            color: #546E7A;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* 中央工作区 - 宇宙窗风格 */
+        .workspace {
+            background: rgba(40, 53, 147, 0.25);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(26, 35, 126, 0.4),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(92, 107, 192, 0.3);
+            position: relative;
+        }
+
+        .workspace-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(92, 107, 192, 0.3);
+            background: rgba(26, 35, 126, 0.2);
+            position: relative;
+        }
+
+        .topic-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid rgba(92, 107, 192, 0.3);
+            border-radius: 16px;
+            background: rgba(63, 81, 181, 0.1);
+            font-size: 16px;
+            color: #e8eaf6;
+            transition: all 0.4s ease;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .topic-input::placeholder {
+            color: #9fa8da;
+        }
+
+        .topic-input:focus {
+            outline: none;
+            border-color: #FF9800;
+            box-shadow: 0 0 25px rgba(255, 152, 0, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            background: rgba(63, 81, 181, 0.15);
+            color: #ffffff;
+        }
+
+        .notes-area {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 旋转模糊度滑盘 */
+        .blur-dial-container {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 80px;
+            height: 80px;
+            z-index: 10;
+        }
+
+        .blur-dial {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(63, 81, 181, 0.3) 0%, rgba(26, 35, 126, 0.6) 100%);
+            border: 2px solid rgba(92, 107, 192, 0.5);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .blur-dial:hover {
+            box-shadow: 0 0 20px rgba(255, 152, 0, 0.4);
+            border-color: rgba(255, 152, 0, 0.6);
+        }
+
+        .dial-pointer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 30px;
+            background: linear-gradient(to top, transparent, #FF9800);
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%) rotate(0deg);
+            transition: transform 0.3s ease;
+            border-radius: 1px;
+        }
+
+        .dial-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #9fa8da;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .notes-editor {
+            flex: 1;
+            padding: 20px;
+            border: 1px solid rgba(92, 107, 192, 0.3);
+            border-radius: 16px;
+            background: rgba(63, 81, 181, 0.08);
+            font-size: 16px;
+            line-height: 1.6;
+            resize: none;
+            font-family: 'Inter', 'Noto Sans SC', 'Monaco', 'Menlo', 'Consolas', monospace;
+            backdrop-filter: blur(15px);
+            color: #e8eaf6;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            margin-right: 100px; /* 为旋转盘让出空间 */
+        }
+
+        .notes-editor::placeholder {
+            color: #9fa8da;
+            line-height: 1.8;
+        }
+
+        .notes-editor:focus {
+            outline: none;
+            border-color: #FF9800;
+            box-shadow: 0 0 20px rgba(255, 152, 0, 0.2),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            background: rgba(63, 81, 181, 0.12);
+        }
+
+        /* Team B 接口区域 - 实时数据传输 */
+        .team-b-interface {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            padding: 8px 12px;
+            background: rgba(207, 216, 220, 0.8);
+            border-radius: 6px;
+            font-size: 11px;
+            color: #546E7A;
+            border: 1px solid rgba(160, 174, 192, 0.3);
+        }
+
+        /* 右侧AI提示区域 - 虚光卡片容器 */
+        .ai-assistant {
+            background: rgba(40, 53, 147, 0.25);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(92, 107, 192, 0.4);
+            box-shadow: 0 12px 40px rgba(26, 35, 126, 0.4),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* 虚光卡片 - 漂浮风格 */
+        .prompt-card {
+            background: linear-gradient(135deg, rgba(63, 81, 181, 0.15) 0%, rgba(40, 53, 147, 0.25) 100%);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            border: 1px solid rgba(92, 107, 192, 0.4);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 25px rgba(26, 35, 126, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: cardFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes cardFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+        }
+
+        .prompt-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(255, 152, 0, 0.2),
+                        0 8px 25px rgba(26, 35, 126, 0.4);
+            border-color: rgba(255, 152, 0, 0.6);
+            animation-play-state: paused;
+        }
+
+        .prompt-card.layer-1 {
+            border-left: 4px solid rgba(255, 152, 0, 0.6);
+            animation-delay: 0s;
+        }
+
+        .prompt-card.layer-2 {
+            border-left: 4px solid rgba(255, 152, 0, 0.8);
+            background: linear-gradient(135deg, rgba(63, 81, 181, 0.2) 0%, rgba(40, 53, 147, 0.3) 100%);
+            animation-delay: 2s;
+        }
+
+        .prompt-card.layer-3 {
+            border-left: 4px solid #FF9800;
+            background: linear-gradient(135deg, rgba(63, 81, 181, 0.25) 0%, rgba(40, 53, 147, 0.35) 100%);
+            animation-delay: 4s;
+            box-shadow: 0 8px 25px rgba(26, 35, 126, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                        0 0 15px rgba(255, 152, 0, 0.1);
+        }
+
+        /* 星尘闪烁效果 */
+        .prompt-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 152, 0, 0.2), rgba(255, 255, 255, 0.1), rgba(255, 152, 0, 0.2), transparent);
+            transition: left 0.8s ease;
+        }
+
+        .prompt-card:hover::before {
+            left: 100%;
+        }
+
+        /* 星尘粒子效果 */
+        .prompt-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 20%, rgba(255, 152, 0, 0.1) 1px, transparent 1px),
+                        radial-gradient(circle at 80% 80%, rgba(255, 107, 102, 0.08) 1px, transparent 1px),
+                        radial-gradient(circle at 40% 60%, rgba(255, 152, 0, 0.06) 1px, transparent 1px);
+            background-size: 30px 30px, 45px 45px, 25px 25px;
+            animation: starDust 15s linear infinite;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        @keyframes starDust {
+            0% { background-position: 0% 0%, 0% 0%, 0% 0%; }
+            100% { background-position: 100% 100%, -100% 100%, 50% -50%; }
+        }
+
+        .prompt-type {
+            font-size: 12px;
+            color: #FF9800;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-shadow: 0 0 8px rgba(255, 152, 0, 0.4);
+            position: relative;
+            z-index: 3;
+        }
+
+        .prompt-content {
+            font-size: 14px;
+            color: #e8eaf6;
+            line-height: 1.5;
+            position: relative;
+            z-index: 3;
+        }
+
+        /* Team C 接口区域 - 性能监控 */
+        .team-c-interface {
+            margin-top: auto;
+            padding: 16px;
+            background: rgba(207, 216, 220, 0.3);
+            border-radius: 8px;
+            border-left: 3px solid #FF9800;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 11px;
+            color: #546E7A;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 4px;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #37474F;
+        }
+
+        /* 底部状态栏 */
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 35, 126, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 8px 24px;
+            border-top: 1px solid rgba(92, 107, 192, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #c5cae9;
+            box-shadow: 0 -4px 20px rgba(26, 35, 126, 0.3);
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                gap: 16px;
+            }
+            
+            .cognitive-panel, .ai-assistant {
+                height: auto;
+            }
+        }
+
+        /* 微交互动效 */
+        .glow-effect {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 5px rgba(255, 152, 0, 0.3); }
+            to { box-shadow: 0 0 20px rgba(255, 152, 0, 0.6); }
+        }
+
+        /* 卡片折页效果 */
+        .card-fold {
+            transform-style: preserve-3d;
+            transition: transform 0.6s ease;
+        }
+
+        .card-fold:hover {
+            transform: rotateY(5deg) rotateX(2deg);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">创意写作AI助手</div>
+            <div class="user-info">
+                <span>👤 师范生: 张老师</span>
+                <span class="status">Phase 1 - 认知追踪测试</span>
+                <span>🔔</span>
+                <span>⚙️</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧认知状态面板 -->
+        <div class="cognitive-panel card-fold">
+            <h3 class="panel-title">🧠 认知状态雷达</h3>
+            
+            <!-- 认知雷达图 -->
+            <div class="cognitive-radar" id="cognitiveRadar">
+                <!-- 雷达点将通过JavaScript动态生成 -->
+            </div>
+
+            <!-- Team A 接口区域 -->
+            <div class="team-a-interface">
+                <div class="interface-label">Team A - DIFCM状态追踪</div>
+                <div style="font-size: 11px; color: #37474F;">
+                    <div>✓ 模型加载完成</div>
+                    <div>✓ 权重矩阵更新: 0.023s</div>
+                    <div>→ 认知漂移检测: 启用</div>
+                    <div>→ 状态预测精度: 87.3%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中央工作区 -->
+        <div class="workspace">
+            <div class="workspace-header">
+                <input type="text" class="topic-input" placeholder="请输入您的创意写作教学主题..." value="如何在小说写作中培养学生的情感表达能力">
+            </div>
+            
+            <div class="notes-area">
+                <!-- 旋转模糊度滑盘 -->
+                <div class="blur-dial-container">
+                    <div class="blur-dial" id="blurDial">
+                        <div class="dial-pointer" id="dialPointer"></div>
+                    </div>
+                    <div class="dial-label">模糊→精确</div>
+                </div>
+
+                <textarea class="notes-editor" placeholder="在这里记录您的思考过程、教学设计想法...
+
+✨ 系统正在智能分析您的输入模式
+📝 支持 Markdown 格式  
+🎯 AI 将根据您的认知状态提供个性化建议
+🌟 旋转右上角滑盘调节模糊度">
+1. 情感表达在小说创作中的重要性
+   - 让学生理解情感是故事的灵魂
+   - 通过细节描写传达情感
+
+2. 教学策略思考
+   - 可以从学生自身经历出发
+   - 引导学生观察日常生活中的情感表达
+   
+3. 具体练习设计
+   - 情感词汇库建设
+   - 场景化写作练习
+                </textarea>
+
+                <!-- Team B 接口区域 -->
+                <div class="team-b-interface">
+                    <span>Team B API</span> | 数据流: 154KB ↑ | 延迟: 23ms
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧AI助手 -->
+        <div class="ai-assistant">
+            <h3 class="panel-title">🤖 AI智能提示</h3>
+            
+            <!-- Layer 1: 开放性联想提示 -->
+            <div class="prompt-card layer-1 glow-effect">
+                <div class="prompt-type">💡 开放性联想</div>
+                <div class="prompt-content">
+                    您可以考虑从"情感的颜色"这个角度来引导学生。比如：愤怒是什么颜色的？悲伤又是什么质感的？让学生通过感官体验来理解情感表达。
+                </div>
+            </div>
+
+            <!-- Layer 2: 结构化引导 -->
+            <div class="prompt-card layer-2">
+                <div class="prompt-type">📋 结构化建议</div>
+                <div class="prompt-content">
+                    建议采用"情感金字塔"教学框架：<br>
+                    1. 底层：基础情感识别<br>
+                    2. 中层：情感表达技巧<br>
+                    3. 顶层：情感深度挖掘
+                </div>
+            </div>
+
+            <!-- Layer 3: 具体操作指导 -->
+            <div class="prompt-card layer-3">
+                <div class="prompt-type">🎯 具体操作</div>
+                <div class="prompt-content">
+                    立即可用的练习：让学生描写"雨天等车时的心情"，要求使用至少3种感官描述，字数150-200字。这个练习能有效训练情感的细节化表达。
+                </div>
+            </div>
+
+            <!-- GNN思维轨迹可视化 -->
+            <div style="margin: 20px 0;">
+                <h4 style="color: #e8eaf6; font-size: 14px; margin-bottom: 12px; text-shadow: 0 0 8px rgba(255, 152, 0, 0.3);">
+                    🌌 思维轨迹演进
+                </h4>
+                <div id="trajectoryViz" style="height: 120px; background: rgba(26, 35, 126, 0.3); border-radius: 12px; border: 1px solid rgba(92, 107, 192, 0.4); position: relative; overflow: hidden;">
+                    <!-- 轨迹线条将通过JavaScript动态生成 -->
+                </div>
+            </div>
+
+            <!-- Team C 接口区域 -->
+            <div class="team-c-interface">
+                <div class="interface-label">Team C - 性能监控</div>
+                <div class="performance-metrics">
+                    <div class="metric">
+                        <div class="metric-value">87.3%</div>
+                        <div>识别准确率</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">234ms</div>
+                        <div>响应时间</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">99.2%</div>
+                        <div>系统可用性</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">1.2MB</div>
+                        <div>数据吞吐</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部状态栏 -->
+    <div class="status-bar">
+        <div class="connection-status">
+            <div class="status-dot"></div>
+            <span>系统运行正常 | 已连接到认知分析引擎</span>
+        </div>
+        <div>
+            <span>当前会话: 00:15:42</span>
+            <span style="margin-left: 24px;">数据同步: 实时</span>
+        </div>
+    </div>
+
+    <script>
+        // 认知雷达图初始化
+        function initCognitiveRadar() {
+            const radar = document.getElementById('cognitiveRadar');
+            const concepts = [
+                { name: '注意力', value: 0.8, angle: 0 },
+                { name: '记忆', value: 0.6, angle: 45 },
+                { name: '理解', value: 0.9, angle: 90 },
+                { name: '创造', value: 0.7, angle: 135 },
+                { name: '动机', value: 0.8, angle: 180 },
+                { name: '情绪', value: 0.5, angle: 225 },
+                { name: '自信', value: 0.9, angle: 270 },
+                { name: '疲劳', value: 0.3, angle: 315 }
+            ];
+
+            concepts.forEach((concept, index) => {
+                const item = document.createElement('div');
+                item.className = 'radar-item';
+                item.style.background = `linear-gradient(135deg, 
+                    rgba(255, 152, 0, ${concept.value}) 0%, 
+                    rgba(207, 216, 220, 0.8) 100%)`;
+                
+                // 计算位置
+                const radius = 80 + (concept.value * 20);
+                const x = 100 + radius * Math.cos(concept.angle * Math.PI / 180);
+                const y = 100 + radius * Math.sin(concept.angle * Math.PI / 180);
+                
+                item.style.left = x + 'px';
+                item.style.top = y + 'px';
+                item.title = `${concept.name}: ${(concept.value * 100).toFixed(1)}%`;
+                
+                if (concept.value > 0.7) {
+                    item.classList.add('active');
+                }
+                
+                radar.appendChild(item);
+            });
+        }
+
+        // 模拟实时数据更新
+        function simulateRealTimeUpdates() {
+            const metrics = document.querySelectorAll('.metric-value');
+            
+            setInterval(() => {
+                // 模拟准确率轻微波动
+                const accuracy = (87 + Math.random() * 6).toFixed(1);
+                metrics[0].textContent = accuracy + '%';
+                
+                // 模拟响应时间变化
+                const responseTime = Math.floor(200 + Math.random() * 100);
+                metrics[1].textContent = responseTime + 'ms';
+                
+                // 模拟系统可用性
+                const availability = (99 + Math.random() * 1).toFixed(1);
+                metrics[2].textContent = availability + '%';
+                
+                // 模拟数据吞吐量
+                const throughput = (1 + Math.random() * 0.5).toFixed(1);
+                metrics[3].textContent = throughput + 'MB';
+            }, 3000);
+        }
+
+        // 输入框焦点特效
+        function initInputEffects() {
+            const topicInput = document.querySelector('.topic-input');
+            const notesEditor = document.querySelector('.notes-editor');
+            
+            [topicInput, notesEditor].forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.style.animation = 'glow 1s ease-in-out';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.style.animation = '';
+                });
+            });
+        }
+
+        // 提示卡片点击效果
+        function initPromptCardEffects() {
+            const cards = document.querySelectorAll('.prompt-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // 添加点击反馈
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                    
+                    // 模拟AI响应
+                    console.log('用户点击了提示卡片，触发深度分析...');
+                });
+            });
+        }
+
+        // 旋转滑盘控制
+        function initBlurDial() {
+            const dial = document.getElementById('blurDial');
+            const pointer = document.getElementById('dialPointer');
+            let currentAngle = 0;
+            let isDragging = false;
+
+            dial.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+
+            function startDrag(e) {
+                isDragging = true;
+                e.preventDefault();
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+                
+                const rect = dial.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+                currentAngle = (angle * 180 / Math.PI + 90 + 360) % 360;
+                
+                pointer.style.transform = `translate(-50%, -100%) rotate(${currentAngle}deg)`;
+                
+                // 更新轨迹可视化
+                updateTrajectoryVisualization(currentAngle / 360);
+                
+                // 更新AI提示强度
+                updatePromptIntensity(currentAngle / 360);
+            }
+
+            function stopDrag() {
+                isDragging = false;
+            }
+        }
+
+        // 思维轨迹可视化
+        function initTrajectoryVisualization() {
+            const container = document.getElementById('trajectoryViz');
+            if (!container) return;
+
+            // 创建SVG轨迹图
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', '100%');
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            
+            // 创建渐变定义
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+            gradient.setAttribute('id', 'trajectoryGradient');
+            gradient.setAttribute('x1', '0%');
+            gradient.setAttribute('y1', '0%');
+            gradient.setAttribute('x2', '100%');
+            gradient.setAttribute('y2', '0%');
+            
+            const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop1.setAttribute('offset', '0%');
+            stop1.setAttribute('stop-color', '#3f51b5');
+            stop1.setAttribute('stop-opacity', '0.8');
+            
+            const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop2.setAttribute('offset', '100%');
+            stop2.setAttribute('stop-color', '#FF9800');
+            stop2.setAttribute('stop-opacity', '0.6');
+            
+            gradient.appendChild(stop1);
+            gradient.appendChild(stop2);
+            defs.appendChild(gradient);
+            svg.appendChild(defs);
+            
+            // 创建轨迹路径
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('stroke', 'url(#trajectoryGradient)');
+            path.setAttribute('stroke-width', '2');
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke-linecap', 'round');
+            
+            // 生成模拟轨迹数据
+            let pathData = 'M 20 80';
+            for (let i = 1; i <= 10; i++) {
+                const x = 20 + (i * 25);
+                const y = 80 - Math.random() * 30 - (i * 3);
+                pathData += ` L ${x} ${y}`;
+            }
+            path.setAttribute('d', pathData);
+            
+            svg.appendChild(path);
+            container.appendChild(svg);
+
+            // 添加交互节点
+            for (let i = 0; i <= 10; i++) {
+                const node = document.createElement('div');
+                node.style.position = 'absolute';
+                node.style.width = '8px';
+                node.style.height = '8px';
+                node.style.background = i < 7 ? '#3f51b5' : '#FF9800';
+                node.style.borderRadius = '50%';
+                node.style.left = (20 + i * 25) + 'px';
+                node.style.top = (80 - Math.random() * 30 - i * 3) + 'px';
+                node.style.cursor = 'pointer';
+                node.style.boxShadow = `0 0 10px ${i < 7 ? 'rgba(63, 81, 181, 0.6)' : 'rgba(255, 152, 0, 0.6)'}`;
+                node.style.transition = 'all 0.3s ease';
+                
+                node.addEventListener('click', () => {
+                    node.style.transform = 'scale(1.5)';
+                    setTimeout(() => node.style.transform = 'scale(1)', 200);
+                    console.log(`轨迹节点 ${i} 被点击`);
+                });
+                
+                container.appendChild(node);
+            }
+        }
+
+        function updateTrajectoryVisualization(intensity) {
+            // 根据模糊度强度更新轨迹颜色
+            const nodes = document.querySelectorAll('#trajectoryViz > div');
+            nodes.forEach((node, index) => {
+                const blueIntensity = 1 - intensity;
+                const orangeIntensity = intensity;
+                
+                if (intensity < 0.5) {
+                    node.style.background = `rgba(63, 81, 181, ${0.6 + blueIntensity * 0.4})`;
+                    node.style.boxShadow = `0 0 10px rgba(63, 81, 181, ${0.6 + blueIntensity * 0.4})`;
+                } else {
+                    node.style.background = `rgba(255, 152, 0, ${0.6 + orangeIntensity * 0.4})`;
+                    node.style.boxShadow = `0 0 10px rgba(255, 152, 0, ${0.6 + orangeIntensity * 0.4})`;
+                }
+            });
+        }
+
+        function updatePromptIntensity(intensity) {
+            // 根据模糊度调整提示卡片的显示优先级
+            const cards = document.querySelectorAll('.prompt-card');
+            cards.forEach((card, index) => {
+                if (intensity < 0.33) {
+                    // 低强度：显示Layer1开放性提示
+                    card.style.opacity = index === 0 ? '1' : '0.5';
+                } else if (intensity < 0.66) {
+                    // 中强度：显示Layer1+Layer2
+                    card.style.opacity = index <= 1 ? '1' : '0.5';
+                } else {
+                    // 高强度：显示所有层级
+                    card.style.opacity = '1';
+                }
+            });
+            
+            console.log(`模糊度调整为: ${(intensity * 100).toFixed(1)}%`);
+        }
+
+        // 页面加载动画
+        function initPageAnimation() {
+            const elements = document.querySelectorAll('.cognitive-panel, .workspace, .ai-assistant');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    el.style.transition = 'all 0.6s ease-out';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        }
+
+        // 初始化所有功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 延迟初始化以确保字体加载
+            setTimeout(() => {
+                initPageAnimation();
+                initCognitiveRadar();
+                initBlurDial();
+                initTrajectoryVisualization();
+                simulateRealTimeUpdates();
+                initInputEffects();
+                initPromptCardEffects();
+                
+                console.log('🎭 创意写作AI助手初始化完成（深空蓝版本）');
+                console.log('📊 Team A-D 接口已就绪');
+                console.log('🎨 配色: 深蓝冷色主调 + 橙色暖色点缀');
+                console.log('🌌 功能: 旋转滑盘 + GNN轨迹可视化 + 虚光卡片');
+            }, 100);
+        });
+    </script>
+</body>
+</html>

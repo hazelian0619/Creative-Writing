@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创意写作AI助手 - 师范生协作平台 v2.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 50%, #CBD5E1 100%);
+            min-height: 100vh;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        /* 顶部导航栏 */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(203, 213, 225, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1E293B;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo::before {
+            content: "✍️";
+            font-size: 24px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: #64748B;
+            font-size: 14px;
+        }
+
+        .user-info .status {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 380px;
+            gap: 24px;
+            max-width: 1400px;
+            margin: 24px auto;
+            padding: 0 24px;
+            height: calc(100vh - 120px);
+        }
+
+        /* 左侧认知状态面板 */
+        .cognitive-panel {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(203, 213, 225, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 思维状态指示器 */
+        .thinking-status {
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: rgba(248, 250, 252, 0.8);
+            border: 1px solid rgba(203, 213, 225, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .status-indicator.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3B82F6;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #CBD5E1;
+        }
+
+        .status-indicator.active .status-dot {
+            background: #3B82F6;
+            animation: pulse 2s infinite;
+        }
+
+        .status-text {
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .status-indicator.active .status-text {
+            color: #1E293B;
+            font-weight: 500;
+        }
+
+        /* 笔记统计 */
+        .notes-stats {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: rgba(248, 250, 252, 0.8);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(203, 213, 225, 0.3);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748B;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+
+        /* 快速操作按钮 */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid rgba(203, 213, 225, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.8);
+            color: #475569;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: #3B82F6;
+            color: white;
+            border-color: #3B82F6;
+        }
+
+        /* 中央工作区 */
+        .workspace {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(203, 213, 225, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .workspace-header {
+            margin-bottom: 20px;
+        }
+
+        .topic-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid rgba(203, 213, 225, 0.3);
+            border-radius: 12px;
+            font-size: 16px;
+            background: rgba(248, 250, 252, 0.8);
+            transition: all 0.3s ease;
+            font-family: inherit;
+            margin-bottom: 8px;
+        }
+
+        .topic-input:focus {
+            outline: none;
+            border-color: #3B82F6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .session-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #64748B;
+        }
+
+        /* 笔记工具栏 */
+        .notes-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(248, 250, 252, 0.8);
+            border: 1px solid rgba(203, 213, 225, 0.3);
+            border-radius: 8px 8px 0 0;
+            margin-bottom: -1px;
+        }
+
+        .toolbar-label {
+            font-size: 12px;
+            color: #64748B;
+            font-weight: 500;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .toolbar-btn {
+            padding: 4px 8px;
+            border: 1px solid rgba(203, 213, 225, 0.3);
+            border-radius: 4px;
+            background: white;
+            color: #64748B;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toolbar-btn:hover {
+            background: #3B82F6;
+            color: white;
+            border-color: #3B82F6;
+        }
+
+        .notes-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notes-editor {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid rgba(203, 213, 225, 0.3);
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            background: rgba(248, 250, 252, 0.8);
+            resize: none;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .notes-editor:focus {
+            outline: none;
+            border-color: #3B82F6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* 右侧AI助手 */
+        .ai-assistant {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(203, 213, 225, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .prompt-card {
+            background: rgba(248, 250, 252, 0.8);
+            border: 1px solid rgba(203, 213, 225, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prompt-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border-color: #3B82F6;
+        }
+
+        .prompt-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+        }
+
+        .prompt-type {
+            font-size: 12px;
+            font-weight: 600;
+            color: #3B82F6;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .prompt-content {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #475569;
+        }
+
+        .prompt-card.layer-1::before {
+            background: linear-gradient(135deg, #10B981, #059669);
+        }
+
+        .prompt-card.layer-2::before {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+        }
+
+        .prompt-card.layer-3::before {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+        }
+
+        /* 系统状态指示器 */
+        .system-status {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #065F46;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 280px 1fr 320px;
+                gap: 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+                height: auto;
+            }
+            
+            .cognitive-panel, .ai-assistant {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">创意写作AI助手</div>
+            <div class="user-info">
+                <span>👤 师范生: 张老师</span>
+                <span class="status">Phase 1 - 认知追踪测试</span>
+                <span>🔔</span>
+                <span>⚙️</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧思维轨迹面板 -->
+        <div class="cognitive-panel fade-in">
+            <h3 class="panel-title">📝 思维轨迹追踪</h3>
+            
+            <!-- 思维状态指示器 -->
+            <div class="thinking-status">
+                <div class="status-indicator active" data-status="deep-thinking">
+                    <span class="status-dot"></span>
+                    <span class="status-text">深度思考中</span>
+                </div>
+                <div class="status-indicator" data-status="creative-divergence">
+                    <span class="status-dot"></span>
+                    <span class="status-text">创意发散</span>
+                </div>
+                <div class="status-indicator" data-status="structured-organization">
+                    <span class="status-dot"></span>
+                    <span class="status-text">结构化整理</span>
+                </div>
+            </div>
+
+            <!-- 笔记统计 -->
+            <div class="notes-stats">
+                <div class="stat-item">
+                    <div class="stat-label">今日笔记</div>
+                    <div class="stat-value" id="todayNotes">1,247字</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">思维深度</div>
+                    <div class="stat-value" id="depthValue">87.3%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">教学准备度</div>
+                    <div class="stat-value" id="readinessValue">78.5%</div>
+                </div>
+            </div>
+
+            <!-- 快速操作 -->
+            <div class="quick-actions">
+                <button class="action-btn" onclick="saveNotes()">💾 保存笔记</button>
+                <button class="action-btn" onclick="exportReport()">📊 导出报告</button>
+            </div>
+        </div>
+
+        <!-- 中央工作区 -->
+        <div class="workspace fade-in">
+            <div class="workspace-header">
+                <input type="text" class="topic-input" placeholder="请输入您的创意写作教学主题..." value="如何在小说写作中培养学生的情感表达能力">
+                <div class="session-info">
+                    <span>📚 备课模式</span>
+                    <span>⏱️ 已用时: 23分钟</span>
+                </div>
+            </div>
+            
+            <div class="notes-area">
+                <div class="notes-toolbar">
+                    <span class="toolbar-label">📝 思维轨迹记录</span>
+                    <div class="toolbar-actions">
+                        <button class="toolbar-btn" onclick="addMarkdown('**')">粗体</button>
+                        <button class="toolbar-btn" onclick="addMarkdown('*')">斜体</button>
+                        <button class="toolbar-btn" onclick="addMarkdown('- ')">列表</button>
+                    </div>
+                </div>
+                <textarea class="notes-editor" placeholder="在这里记录您的思考过程、教学设计想法...
+
+✨ 系统正在智能分析您的输入模式
+📝 支持 Markdown 格式
+🎯 AI 将根据您的认知状态提供个性化建议
+
+💡 提示：尝试从不同角度思考问题，系统会捕捉您的思维轨迹并优化建议"># 情感表达教学备课笔记
+
+## 1. 教学目标分析
+- 让学生理解情感是故事的灵魂
+- 通过细节描写传达情感
+- 培养学生的情感敏感度
+
+## 2. 教学策略思考
+- 从学生自身经历出发
+- 引导学生观察日常生活中的情感表达
+- 运用具身认知理论
+
+## 3. 具体练习设计
+- 情感词汇库建设
+- 场景化写作练习
+- 角色扮演活动
+
+## 4. 评估方式
+- 情感描写的细腻程度
+- 情节的情感层次
+- 人物情感的真实性</textarea>
+            </div>
+        </div>
+
+        <!-- 右侧AI助手 -->
+        <div class="ai-assistant fade-in">
+            <h3 class="panel-title">🤖 AI教学助手</h3>
+            
+            <!-- 模糊引导提示 -->
+            <div class="prompt-card layer-1" onclick="handlePromptClick(this, 1)">
+                <div class="prompt-type">💡 模糊引导</div>
+                <div class="prompt-content">
+                    您觉得"情感"这个词还能联想到什么？比如颜色、声音、温度...让学生从感官体验开始理解情感表达。
+                </div>
+            </div>
+
+            <!-- 精确校准提示 -->
+            <div class="prompt-card layer-2" onclick="handlePromptClick(this, 2)">
+                <div class="prompt-type">🎯 精确校准</div>
+                <div class="prompt-content">
+                    建议具体设计"情感温度计"练习：<br>
+                    • 让学生给不同情感打分（1-10）<br>
+                    • 用颜色和形状表达情感强度<br>
+                    • 记录情感变化的时间线
+                </div>
+            </div>
+
+            <!-- 教学策略建议 -->
+            <div class="prompt-card layer-3" onclick="handlePromptClick(this, 3)">
+                <div class="prompt-type">📚 教学策略</div>
+                <div class="prompt-content">
+                    可以尝试"情感角色扮演"：<br>
+                    • 让学生扮演不同情感状态的角色<br>
+                    • 通过肢体语言表达情感<br>
+                    • 观察和记录情感表达细节
+                </div>
+            </div>
+
+            <!-- 实时分析反馈 -->
+            <div class="prompt-card" style="background: rgba(16, 185, 129, 0.1); border-color: #10B981;">
+                <div class="prompt-type">📊 思维分析</div>
+                <div class="prompt-content">
+                    检测到您的备课思路正在向"具身认知"深化，建议继续探索如何让学生通过身体体验理解情感表达。
+                </div>
+            </div>
+
+            <!-- 成长建议 -->
+            <div class="prompt-card" style="background: rgba(245, 158, 11, 0.1); border-color: #F59E0B;">
+                <div class="prompt-type">🌱 成长建议</div>
+                <div class="prompt-content">
+                    您的思维深度比上周提升了15%，建议尝试更多跨学科的教学方法，如心理学、艺术等领域的知识整合。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 思维状态管理
+        function updateThinkingStatus(status) {
+            const indicators = document.querySelectorAll('.status-indicator');
+            indicators.forEach(indicator => {
+                indicator.classList.remove('active');
+            });
+            
+            const targetIndicator = document.querySelector(`[data-status="${status}"]`);
+            if (targetIndicator) {
+                targetIndicator.classList.add('active');
+            }
+        }
+
+        // 笔记字数统计
+        function updateNotesCount() {
+            const textarea = document.querySelector('.notes-editor');
+            const countElement = document.getElementById('todayNotes');
+            const wordCount = textarea.value.length;
+            countElement.textContent = wordCount.toLocaleString() + '字';
+        }
+
+        // 提示卡片点击处理
+        function handlePromptClick(card, layer) {
+            // 添加点击反馈
+            card.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                card.style.transform = '';
+            }, 150);
+            
+            // 模拟AI响应
+            console.log(`用户点击了第${layer}层提示，触发深度分析...`);
+            
+            // 更新认知状态
+            updateCognitiveState(layer);
+        }
+
+        // 更新认知状态
+        function updateCognitiveState(layer) {
+            const metrics = {
+                1: { depth: 0.89, readiness: 0.82 },
+                2: { depth: 0.91, readiness: 0.85 },
+                3: { depth: 0.93, readiness: 0.88 }
+            };
+            
+            const newMetrics = metrics[layer];
+            if (newMetrics) {
+                document.getElementById('depthValue').textContent = (newMetrics.depth * 100).toFixed(1) + '%';
+                document.getElementById('readinessValue').textContent = (newMetrics.readiness * 100).toFixed(1) + '%';
+            }
+        }
+
+        // 保存笔记
+        function saveNotes() {
+            const textarea = document.querySelector('.notes-editor');
+            const content = textarea.value;
+            localStorage.setItem('savedNotes', content);
+            alert('笔记已保存！');
+        }
+
+        // 导出报告
+        function exportReport() {
+            const textarea = document.querySelector('.notes-editor');
+            const content = textarea.value;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '备课笔记_' + new Date().toISOString().split('T')[0] + '.txt';
+            a.click();
+        }
+
+        // Markdown工具栏
+        function addMarkdown(symbol) {
+            const textarea = document.querySelector('.notes-editor');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            
+            let replacement = '';
+            if (symbol === '**') {
+                replacement = `**${selectedText}**`;
+            } else if (symbol === '*') {
+                replacement = `*${selectedText}*`;
+            } else if (symbol === '- ') {
+                replacement = `- ${selectedText}`;
+            }
+            
+            textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start + symbol.length, start + symbol.length + selectedText.length);
+        }
+
+        // 模拟实时数据更新
+        function simulateRealTimeUpdates() {
+            setInterval(() => {
+                // 模拟认知指标的轻微波动
+                const metrics = ['depthValue', 'readinessValue'];
+                metrics.forEach(metricId => {
+                    const element = document.getElementById(metricId);
+                    if (element) {
+                        const currentValue = parseFloat(element.textContent);
+                        const variation = (Math.random() - 0.5) * 2; // ±1% 变化
+                        const newValue = Math.max(70, Math.min(98, currentValue + variation));
+                        element.textContent = newValue.toFixed(1) + '%';
+                    }
+                });
+                
+                // 更新笔记字数
+                updateNotesCount();
+            }, 5000);
+        }
+
+        // 输入框智能提示
+        function initSmartInput() {
+            const topicInput = document.querySelector('.topic-input');
+            const notesEditor = document.querySelector('.notes-editor');
+            
+            // 主题输入变化监听
+            topicInput.addEventListener('input', function() {
+                console.log('主题输入变化，AI正在分析...');
+                // 这里可以添加实时主题分析逻辑
+            });
+            
+            // 笔记输入变化监听
+            notesEditor.addEventListener('input', function() {
+                console.log('笔记内容变化，更新认知状态...');
+                // 这里可以添加实时笔记分析逻辑
+            });
+        }
+
+        // 页面加载动画
+        function initPageAnimation() {
+            const elements = document.querySelectorAll('.cognitive-panel, .workspace, .ai-assistant');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                
+                setTimeout(() => {
+                    el.style.transition = 'all 0.6s ease-out';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 200);
+            });
+        }
+
+        // 初始化所有功能
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                initPageAnimation();
+                simulateRealTimeUpdates();
+                initSmartInput();
+                updateNotesCount();
+                
+                console.log('✍️ 创意写作AI助手 v2.0 初始化完成');
+                console.log('📝 思维轨迹追踪系统已启动');
+                console.log('📊 实时数据监控已激活');
+            }, 100);
+        });
+    </script>
+</body>
+</html> 

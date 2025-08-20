@@ -1,0 +1,184 @@
+# Prometheus告警规则 - 认知状态追踪系统
+
+groups:
+  - name: cognitive-state-alerts
+    rules:
+      # API服务告警
+      - alert: APIHighResponseTime
+        expr: histogram_quantile(0.95, rate(cognitive_api_request_duration_seconds_bucket[5m])) > 5
+        for: 2m
+        labels:
+          severity: warning
+          service: cognitive-backend
+        annotations:
+          summary: "API响应时间过高"
+          description: "API 95分位响应时间超过5秒，当前值: {{ $value }}秒"
+
+      - alert: APIHighErrorRate
+        expr: rate(cognitive_api_requests_total{status_code=~"5.."}[5m]) / rate(cognitive_api_requests_total[5m]) > 0.05
+        for: 3m
+        labels:
+          severity: critical
+          service: cognitive-backend
+        annotations:
+          summary: "API错误率过高"
+          description: "API错误率超过5%，当前值: {{ $value | humanizePercentage }}"
+
+      - alert: APIServiceDown
+        expr: up{job="cognitive-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: cognitive-backend
+        annotations:
+          summary: "API服务不可用"
+          description: "认知状态后端API服务已离线"
+
+      # 认知分析告警
+      - alert: CognitiveAnalysisHighLatency
+        expr: histogram_quantile(0.95, rate(cognitive_processing_duration_seconds_bucket[5m])) > 10
+        for: 3m
+        labels:
+          severity: warning
+          service: cognitive-analysis
+        annotations:
+          summary: "认知分析处理延迟过高"
+          description: "认知分析95分位处理时间超过10秒，当前值: {{ $value }}秒"
+
+      - alert: CognitiveAnalysisHighFailureRate
+        expr: rate(cognitive_analysis_total{status="failure"}[5m]) / rate(cognitive_analysis_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: high
+          service: cognitive-analysis
+        annotations:
+          summary: "认知分析失败率过高"
+          description: "认知分析失败率超过10%，当前值: {{ $value | humanizePercentage }}"
+
+      - alert: DIFCMLowAccuracy
+        expr: difcm_prediction_accuracy < 0.75
+        for: 5m
+        labels:
+          severity: high
+          service: difcm-model
+        annotations:
+          summary: "DIFCM模型准确率过低"
+          description: "DIFCM模型预测准确率低于75%，当前值: {{ $value | humanizePercentage }}"
+
+      # 系统资源告警
+      - alert: HighCPUUsage
+        expr: system_cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "CPU使用率过高"
+          description: "系统CPU使用率超过80%，当前值: {{ $value }}%"
+
+      - alert: HighMemoryUsage
+        expr: (system_memory_usage_bytes / (system_memory_usage_bytes + available_memory_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "内存使用率过高"
+          description: "系统内存使用率超过85%，当前值: {{ $value }}%"
+
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "磁盘空间不足"
+          description: "根分区可用空间少于10%，当前值: {{ $value }}%"
+
+      # 数据库告警
+      - alert: MongoDBConnectionFailure
+        expr: service_up{service_name="storage_service"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: mongodb
+        annotations:
+          summary: "MongoDB连接失败"
+          description: "无法连接到MongoDB数据库"
+
+      - alert: HighDatabaseQueryLatency
+        expr: histogram_quantile(0.95, rate(database_query_duration_seconds_bucket[5m])) > 2
+        for: 3m
+        labels:
+          severity: warning
+          service: mongodb
+        annotations:
+          summary: "数据库查询延迟过高"
+          description: "数据库查询95分位延迟超过2秒，当前值: {{ $value }}秒"
+
+      # 队列和处理告警
+      - alert: ProcessingQueueBacklog
+        expr: processing_queue_size > 1000
+        for: 2m
+        labels:
+          severity: warning
+          service: processing
+        annotations:
+          summary: "处理队列积压"
+          description: "处理队列中有{{ $value }}个待处理项目"
+
+      - alert: LowActiveUserSessions
+        expr: active_user_sessions < 1
+        for: 10m
+        labels:
+          severity: info
+          service: users
+        annotations:
+          summary: "活跃用户会话过少"
+          description: "当前活跃用户会话数: {{ $value }}"
+
+      # 业务指标告警
+      - alert: AbnormalCognitiveStateDistribution
+        expr: |
+          (
+            histogram_quantile(0.95, rate(cognitive_state_values_bucket{concept="attention"}[10m])) > 0.9 or
+            histogram_quantile(0.05, rate(cognitive_state_values_bucket{concept="attention"}[10m])) < 0.1
+          )
+        for: 5m
+        labels:
+          severity: info
+          service: cognitive-analysis
+        annotations:
+          summary: "认知状态分布异常"
+          description: "注意力状态分布出现异常模式"
+
+  - name: cognitive-state-business-alerts
+    rules:
+      # 业务连续性告警
+      - alert: NoRecentCognitiveAnalysis
+        expr: increase(cognitive_analysis_total[15m]) == 0
+        for: 15m
+        labels:
+          severity: warning
+          service: business
+        annotations:
+          summary: "15分钟内无认知分析"
+          description: "系统在过去15分钟内没有处理任何认知分析请求"
+
+      - alert: UnusualUserBehaviorPattern
+        expr: |
+          (
+            rate(cognitive_states_stored_total[1h]) > 
+            avg_over_time(rate(cognitive_states_stored_total[1h])[7d:1h]) * 2
+          ) or (
+            rate(cognitive_states_stored_total[1h]) < 
+            avg_over_time(rate(cognitive_states_stored_total[1h])[7d:1h]) * 0.5
+          )
+        for: 30m
+        labels:
+          severity: info
+          service: business
+        annotations:
+          summary: "用户行为模式异常"
+          description: "用户活动水平与过去7天的平均水平相比异常"
