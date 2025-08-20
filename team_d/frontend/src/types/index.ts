@@ -27,16 +27,16 @@ export interface UserProfile {
 
 // ============ 认知状态相关类型 ============
 
-/** 认知概念枚举 */
+/** 写作认知概念枚举 - 基于权威教育心理学研究框架 */
 export type CognitiveConcept = 
-  | 'attention'      // 注意力
-  | 'memory'         // 工作记忆
-  | 'comprehension'  // 理解力
-  | 'creativity'     // 创造力
-  | 'motivation'     // 动机水平
-  | 'emotion'        // 情绪状态
-  | 'confidence'     // 自信心
-  | 'fatigue';       // 疲劳度
+  | 'depth_thinking'      // 深刻性：主题本质挖掘
+  | 'flexible_thinking'   // 灵活性：多角度思维
+  | 'critical_thinking'   // 批判性：错误识别与自评
+  | 'originality'         // 独创性：新颖独特程度
+  | 'fluency'             // 流畅性：思维表达连贯性
+  | 'motivation'          // 动机水平：写作驱动力
+  | 'emotion_regulation'  // 情绪调节：情感状态管理
+  | 'cognitive_load';     // 认知负载：思维负担程度
 
 /** 认知状态向量 */
 export interface CognitiveState {

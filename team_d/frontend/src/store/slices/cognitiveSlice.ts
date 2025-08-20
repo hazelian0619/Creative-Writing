@@ -333,8 +333,8 @@ function updateStatistics(state: CognitiveSliceState) {
   if (state.history.length === 0) return;
   
   const concepts: CognitiveConcept[] = [
-    'attention', 'memory', 'comprehension', 'creativity',
-    'motivation', 'emotion', 'confidence', 'fatigue'
+    'depth_thinking', 'flexible_thinking', 'critical_thinking', 'originality',
+    'fluency', 'motivation', 'emotion_regulation', 'cognitive_load'
   ];
   
   // 计算平均值

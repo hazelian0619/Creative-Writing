@@ -81,27 +81,27 @@ class CognitiveState(BaseModel):
     def to_dict(self) -> Dict[str, float]:
         """转换为字典格式"""
         return {
-            "attention": self.attention,
-            "memory": self.memory,
-            "comprehension": self.comprehension,
-            "creativity": self.creativity,
+            "depth_thinking": self.depth_thinking,
+            "flexible_thinking": self.flexible_thinking,
+            "critical_thinking": self.critical_thinking,
+            "originality": self.originality,
+            "fluency": self.fluency,
             "motivation": self.motivation,
-            "emotion": self.emotion,
-            "confidence": self.confidence,
-            "fatigue": self.fatigue
+            "emotion_regulation": self.emotion_regulation,
+            "cognitive_load": self.cognitive_load
         }
     
     def to_vector(self) -> List[float]:
         """转换为向量格式 - 与Team A的DIFCM兼容"""
         return [
-            self.attention,
-            self.memory,
-            self.comprehension,
-            self.creativity,
+            self.depth_thinking,
+            self.flexible_thinking,
+            self.critical_thinking,
+            self.originality,
+            self.fluency,
             self.motivation,
-            self.emotion,
-            self.confidence,
-            self.fatigue
+            self.emotion_regulation,
+            self.cognitive_load
         ]
 
 
